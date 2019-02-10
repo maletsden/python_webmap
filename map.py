@@ -161,7 +161,7 @@ def define_color(country, dct, maximum):
             'fillOpacity': 0.7}
 
 
-def create_Markers(fg_markers, movie_by_year, year, limit):
+def create_Markers(fg_markers, movie_by_year, year, limit, maximum):
     """
     (folium.map.FeatureGroup object, dict, int) -> None
 
@@ -179,8 +179,12 @@ def create_Markers(fg_markers, movie_by_year, year, limit):
         # check whether the services throw error 429
         geolocator.geocode('USA')
 
-        for country in movie_by_year[year]:
-            for film in movie_by_year[year][country]['films']:
+        for index in range(maximum + 1):
+            for country in movie_by_year[year]:
+                films = movie_by_year[year][country]['films']
+                if len(films) <= index:
+                    continue
+                film = movie_by_year[year][country]['films'][index]
                 coords = define_coords(film[1])
                 if coords is None:
                     continue
@@ -195,7 +199,7 @@ def create_Markers(fg_markers, movie_by_year, year, limit):
         print(error)
 
 
-def color_Contries(fg_countries, movie_by_year, year):
+def color_Contries(fg_countries, movie_by_year, year, maximum):
     """
     (folium.map.FeatureGroup object, dict, int) -> None
 
@@ -208,9 +212,7 @@ def color_Contries(fg_countries, movie_by_year, year):
 
     :return: None
     """
-    maximum = max(movie_by_year[year],
-                  key=lambda country: movie_by_year[year][country]['count'])
-    maximum = movie_by_year[year][define_country(maximum)]['count']
+
 
     file_world = open('world.json', 'r', encoding='utf-8-sig').read()
     style_lambda = lambda country: define_color(country['properties'],
@@ -236,13 +238,18 @@ def create_Map(out_file, year, limit, movie_by_year):
     # create Map
     map = folium.Map()
 
+    # count maximum amount of movies filmed in chosen year
+    maximum = max(movie_by_year[year],
+                  key=lambda country: movie_by_year[year][country]['count'])
+    maximum = movie_by_year[year][define_country(maximum)]['count']
+
     # set Markers on the Map
     fg_markers = folium.FeatureGroup(name="Markers")
-    create_Markers(fg_markers, movie_by_year, year, limit)
+    create_Markers(fg_markers, movie_by_year, year, limit, maximum)
 
     # fill countries on the Map with colors
     fg_countries = folium.FeatureGroup(name="Countries")
-    color_Contries(fg_countries, movie_by_year, year)
+    color_Contries(fg_countries, movie_by_year, year, maximum)
 
     # add layers on the Map
     map.add_child(fg_markers)
