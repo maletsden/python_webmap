@@ -185,7 +185,7 @@ def create_Markers(fg_markers, movie_by_year, year, limit):
                 if coords is None:
                     continue
                 i += 1
-                print(i)
+                print(i, 'marker')
                 if i == limit:
                     raise geopy.exc.GeopyError
                 fg_markers.add_child(folium.Marker(location=coords,
@@ -208,7 +208,6 @@ def color_Contries(fg_countries, movie_by_year, year):
 
     :return: None
     """
-    print(fg_countries)
     maximum = max(movie_by_year[year],
                   key=lambda country: movie_by_year[year][country]['count'])
     maximum = movie_by_year[year][define_country(maximum)]['count']
